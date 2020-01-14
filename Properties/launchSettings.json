@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "dump_testing": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

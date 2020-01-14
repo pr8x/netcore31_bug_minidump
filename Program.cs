@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -149,19 +150,30 @@ namespace dump_testing
         {
             var bloatHeap = new byte[2000000];
 
-            var handle = NativeMethods.CreateFile(
-                "MEMORY.dmp",
-                NativeMethods.GENERIC_WRITE,
-                0,
-                IntPtr.Zero,
-                NativeMethods.CREATE_ALWAYS,
-                0,
-                IntPtr.Zero);
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                var handle = NativeMethods.CreateFile(
+                    "MEMORY.dmp",
+                    NativeMethods.GENERIC_WRITE,
+                    0,
+                    IntPtr.Zero,
+                    NativeMethods.CREATE_ALWAYS,
+                    0,
+                    IntPtr.Zero);
 
-            if (handle.IsInvalid) throw new Exception();
+                if (handle.IsInvalid) throw new Exception();
 
-            MiniDump.Write(handle,
-                MiniDump.Option.WithPrivateReadWriteMemory | MiniDump.Option.WithTokenInformation);
+                if (!MiniDump.Write(handle,
+                    MiniDump.Option.WithPrivateReadWriteMemory | MiniDump.Option.WithTokenInformation, MiniDump.ExceptionInfo.Present))
+                {
+                    throw new Win32Exception();
+                }
+
+                Console.WriteLine("Dump written!");
+            };
+
+
+            throw new Exception();
         }
     }
 }
